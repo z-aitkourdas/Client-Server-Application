@@ -40,11 +40,12 @@ def Main():
         s.listen(5)  # Accept 5 connection
 
         print ("Server name : {} \t at PORT : {}".format(host, port))
+        print("Waiting for Connection ...")
         while True :
-                print("Waiting for Connection ...")
                 cnx, addr = s.accept()  # Accept the incoming connection
                 print('Client connect at IP => ' + '<' + str(socket.gethostbyname(host)) + '>')
                 
+                print("Waiting for another Connection ...")
                 # Managing multiple connections
                 t = threading.Thread(target=RecvFile, args=('recvThread', cnx))
                 t.start()
