@@ -45,10 +45,10 @@ class Server:
     def sendFile(self, name, connection):
 
         self.listFiles(connection)
-
+        
         file_to_send = connection.recv(1024)
         file_to_send = file_to_send.decode()
-        
+
         is_file = self.isFile(file_to_send)
 
         if is_file != None:
