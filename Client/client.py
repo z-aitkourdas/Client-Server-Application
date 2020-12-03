@@ -37,6 +37,7 @@ def Main():
 					dataRecv += len(data)
 					f.write(data)
 					print(dataRecv)
+				f.close()
 				print ('The file has been completely transfered ')
 		else :
 			print('File does not Exist!')
