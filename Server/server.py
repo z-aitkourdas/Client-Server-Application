@@ -2,6 +2,10 @@ import socket
 import os
 import threading
 
+def fileList(sock):
+        for file_name in os.listdir(os.getcwd()):
+                sock.send(bytes(file_name), 'utf-8')
+
 def RecvFile(name, sock):
         # Getting the filename meant to be downloaded
         filename = sock.recv(1024)
@@ -28,7 +32,8 @@ def RecvFile(name, sock):
                 # Send an eror message because the file doesn't exist
                 sock.send(bytes('ERR', 'utf-8'))
         sock.close()
-	
+
+
 
 def Main():
         host = socket.gethostname()  # Get the server name
