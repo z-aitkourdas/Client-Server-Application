@@ -27,8 +27,12 @@ class Server:
         self.server_socket.close()
 
     def listFiles(self, connection):
-        for file_name in os.listdir(os.getcwd()):
-            connection.send(bytes(file_name, 'utf-8'))
+        client_response = connection.recv(1024)
+        client_response = client_response.decode()
+
+        if client_response[:3] == 'YES':
+            for file_name in os.listdir(os.getcwd()):
+                connection.send(bytes(file_name, 'utf-8'))
     
     def isFile(self, file_name):
         if os.path.isfile(file_name):
