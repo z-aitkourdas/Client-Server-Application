@@ -33,7 +33,9 @@ class Server:
         if client_response[:3] == 'YES':
             for file_name in os.listdir(os.getcwd()):
                 connection.send(bytes(file_name, 'utf-8'))
-    
+        else:
+            return 0
+
     def isFile(self, file_name):
         if os.path.isfile(file_name):
             return 'EXIST' + str(os.path.getsize(file_name)/1024)
