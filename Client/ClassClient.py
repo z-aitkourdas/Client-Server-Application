@@ -19,6 +19,8 @@ class Client:
 
             files = cnx.recv(1024)
             print('Data recieved : ', files)
+        else:
+            cnx.send(bytes("NO", 'utf-8'))
     
     def recvFile(self, cnx):
         file_name = input("Enter the file you want to download with the extention -> ")
