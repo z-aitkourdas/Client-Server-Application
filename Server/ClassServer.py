@@ -43,8 +43,8 @@ class Server:
             return None
  
     def sendFile(self, name, connection):
-        file_to_send = connection.recv(1024)
-        file_to_send = file_to_send.decode()
+        # file_to_send = connection.recv(1024)
+        # file_to_send = file_to_send.decode()
 
         self.listFiles(connection)
 
