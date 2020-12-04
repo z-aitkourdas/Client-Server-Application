@@ -31,14 +31,15 @@ class Server:
         client_response = client_response.decode()
 
         if client_response[:3] == 'YES':
-            for file_name in os.listdir(os.getcwd()):
+            for file_name in os.listdir(os.getcwd()+"\\Files"):
                 connection.send(bytes(file_name, 'utf-8'))
         else:
             return 0
 
     def isFile(self, file_name):
-        if os.path.isfile(file_name):
-            return 'EXIST' + str(os.path.getsize(file_name)/1024)
+        path = os.getcwd()+"\\Files\\"
+        if os.path.isfile(path + file_name):
+            return 'EXIST' + str(os.path.getsize(path + file_name)/1000)
         else:
             return None
  
@@ -59,8 +60,8 @@ class Server:
 
             print('Client response : ',user_response[:2])
             if user_response[:2] == 'OK':
-                with open(file_to_send, 'rb') as f:
-                    bytes_to_send = f.read(file_to_send)
+                with open(os.getcwd() + "\\Files\\" + file_to_send, 'rb') as f:
+                    bytes_to_send = f.read(1024)
                     connection.send(bytes_to_send)
 
                     while bytes_to_send != '':
