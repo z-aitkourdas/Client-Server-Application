@@ -69,6 +69,10 @@ class Server:
             else:
                 cofile_to_send = connection.send(bytes('ERR', 'utf-8'))
             cofile_to_send = connection.close()
+        
+        else :
+            connection.send(bytes("File does not exist!", 'utf-8'))
+            connection.close()
 
 if __name__ == '__main__' :
     my_server = Server()
