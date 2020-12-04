@@ -52,8 +52,7 @@ class Client:
                     finally:
                         f.close()
             else :
-                srv_response = cnx.recv(1024).decode()
-                print(srv_response)
+                print(server_response)
 
     def start(self):
         self.listFiles(self.client_socket)
