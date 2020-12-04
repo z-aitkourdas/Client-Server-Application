@@ -17,8 +17,11 @@ class Client:
         if list_files.lower() in ['y', 'yes']:
             cnx.send(bytes('YES', 'utf-8'))
 
-            files = cnx.recv(1024)
-            print('Data recieved : ', files)
+            file_rcv = cnx.recv(1024).decode()
+            print('Data recieved : ', file_rcv)
+            while file_rcv != '':
+                print(file_rcv)
+                file_rcv = cnx.recv(1024).decode()
         else:
             cnx.send(bytes("NO", 'utf-8'))
     
