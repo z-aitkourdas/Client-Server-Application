@@ -1,5 +1,5 @@
 import socket
-
+import os
 class Client:
     def __init__(self, server_host, server_port):
         self.server_host = server_host
@@ -18,10 +18,9 @@ class Client:
             cnx.send(bytes('YES', 'utf-8'))
 
             file_rcv = cnx.recv(1024).decode()
-            print('Data recieved : ', file_rcv)
-            while file_rcv != '':
-                print(file_rcv)
-                file_rcv = cnx.recv(1024).decode()
+            while file_rcv.split()[-1] != 'Done':
+                file_rcv += cnx.recv(1024).decode()
+            print(file_rcv.split()[:-1])
         else:
             cnx.send(bytes("NO", 'utf-8'))
     
@@ -42,7 +41,7 @@ class Client:
                     cnx.send(bytes('OK', 'utf-8'))
                     
                     try:
-                        f = open(file_name, 'wb')
+                        f = open(os.getcwd()+"\\Downloads\\" + file_name, 'wb')
                         data_recv = 0
 
                         while data_recv < file_size:
