@@ -51,6 +51,9 @@ class Client:
                         print("An exception occurred!")
                     finally:
                         f.close()
+            else :
+                srv_response = cnx.recv(1024).decode()
+                print(srv_response)
 
     def start(self):
         self.listFiles(self.client_socket)
