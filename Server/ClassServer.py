@@ -32,7 +32,8 @@ class Server:
 
         if client_response[:3] == 'YES':
             for file_name in os.listdir(os.getcwd()+"\\Files"):
-                connection.send(bytes(file_name, 'utf-8'))
+                connection.send(bytes(file_name+' ', 'utf-8'))
+            connection.send(bytes("Done", "utf-8"))
         else:
             return 0
 
