@@ -13,7 +13,7 @@ class Server:
         self.server_socket.listen(5)
     
     def start(self):
-        print ("Server name : {}\n PORT : {}".format(self.host_name, self.host_port))
+        print ("Server name : {}\nPORT : {}".format(self.host_name, self.host_port))
         print("Waiting for Connection ...")
 
         while True:
