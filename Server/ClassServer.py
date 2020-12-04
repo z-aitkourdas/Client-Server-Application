@@ -68,11 +68,11 @@ class Server:
                         connection.send(bytes_to_send)
             else:
                 connection.send(bytes('ERR', 'utf-8'))
-            connection.close()
         
         else :
             connection.send(bytes("File does not exist!", 'utf-8'))
-            connection.close()
+        
+        connection.close()
 
 if __name__ == '__main__' :
     my_server = Server()
