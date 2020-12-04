@@ -52,23 +52,23 @@ class Server:
         is_file = self.isFile(file_to_send)
 
         if is_file != None:
-            cofile_to_send = connection.send(bytes(is_file, 'utf-8'))
+            connection.send(bytes(is_file, 'utf-8'))
 
-            user_response = cofile_to_send = connection.recv(1024)
+            user_response = connection.recv(1024)
             user_response = user_response.decode()
 
             print('Client response : ',user_response[:2])
             if user_response[:2] == 'OK':
                 with open(file_to_send, 'rb') as f:
                     bytes_to_send = f.read(file_to_send)
-                    cofile_to_send = connection.send(bytes_to_send)
+                    connection.send(bytes_to_send)
 
                     while bytes_to_send != '':
                         bytes_to_send = f.read(100000000)
-                        cofile_to_send = connection.send(bytes_to_send)
+                        connection.send(bytes_to_send)
             else:
-                cofile_to_send = connection.send(bytes('ERR', 'utf-8'))
-            cofile_to_send = connection.close()
+                connection.send(bytes('ERR', 'utf-8'))
+            connection.close()
         
         else :
             connection.send(bytes("File does not exist!", 'utf-8'))
