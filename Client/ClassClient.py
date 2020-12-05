@@ -41,6 +41,7 @@ class Client:
                     cnx.send(bytes('OK', 'utf-8'))
                     
                     try:
+                        os.makedirs('Downloads', exist_ok=True)
                         f = open(os.getcwd()+"\\Downloads\\" + file_name, 'wb')
                         data_recv = 0
 
