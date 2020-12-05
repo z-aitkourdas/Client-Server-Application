@@ -20,7 +20,7 @@ class Client:
             file_rcv = cnx.recv(1024).decode()
             while file_rcv.split()[-1] != 'Done':
                 file_rcv += cnx.recv(1024).decode()
-            print(file_rcv.split()[:-1])
+            print(file_rcv[:-5])
         else:
             cnx.send(bytes("NO", 'utf-8'))
     
@@ -46,15 +46,20 @@ class Client:
                     cnx.send(bytes('OK', 'utf-8'))
                     
                     try:
+                        full_path = os.getcwd()+"\\Downloads\\" + file_name
                         os.makedirs('Downloads', exist_ok=True)
-                        f = open(os.getcwd()+"\\Downloads\\" + file_name, 'wb')
-                        data_recv = 0
+                        if os.path.isfile(full_path) and os.path.getsize(full_path) == file_size:
+                            print("The file already exist!")
 
-                        while data_recv < file_size:
-                            data = cnx.recv(10_000_000)
-                            data_recv += len(data)
-                            f.write(data)
-                        print("The file has been comppletely transferd!")
+                        else :
+                            f = open(full_path, 'wb')
+                            data_recv = 0
+
+                            while data_recv < file_size:
+                                data = cnx.recv(10**7)
+                                data_recv += len(data)
+                                f.write(data)
+                            print("The file has been comppletely transferd!")
                     except :
                         print("An exception occurred!")
                     finally:
