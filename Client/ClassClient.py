@@ -34,8 +34,13 @@ class Client:
             server_response = server_response.decode()
 
             if server_response[:5] == 'EXIST':
-                file_size = server_response[5:]
-                msg = input("File Exists, "+file_size+'Bytes, download? (Y/N) -> ')
+                file_size = float(server_response[5:])
+                if file_size // 10**3 == 0:
+                    msg = input("File Exists, "+str(file_size)+'Bytes, download? (Y/N) -> ')
+                elif file_size // 10**3 >= 1 and file_size // 10**3 < 10**3:
+                    msg = input("File Exists, "+str(file_size/10**3)+'KB, download? (Y/N) -> ')
+                elif file_size // 10**6 >= 1 :
+                    msg = input("File Exists, "+str(file_size//10**6)+'MB, download? (Y/N) -> ')
                 
                 if msg.lower() in ['y', 'yes'] :
                     cnx.send(bytes('OK', 'utf-8'))
@@ -45,7 +50,7 @@ class Client:
                         f = open(os.getcwd()+"\\Downloads\\" + file_name, 'wb')
                         data_recv = 0
 
-                        while data_recv < int(file_size):
+                        while data_recv < file_size:
                             data = cnx.recv(10_000_000)
                             data_recv += len(data)
                             f.write(data)
