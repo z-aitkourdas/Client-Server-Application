@@ -40,7 +40,7 @@ class Server:
     def isFile(self, file_name):
         path = os.getcwd()+"\\Files\\"
         if os.path.isfile(path + file_name):
-            return 'EXIST' + str(os.path.getsize(path + file_name)/1000)
+            return 'EXIST' + str(os.path.getsize(path + file_name))
         else:
             return None
  
