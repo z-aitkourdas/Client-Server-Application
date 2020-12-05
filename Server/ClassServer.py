@@ -66,7 +66,7 @@ class Server:
                     connection.send(bytes_to_send)
 
                     while bytes_to_send != '':
-                        bytes_to_send = f.read(100000000)
+                        bytes_to_send = f.read(10**8)
                         connection.send(bytes_to_send)
             else:
                 connection.send(bytes('ERR', 'utf-8'))
