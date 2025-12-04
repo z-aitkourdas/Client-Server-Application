@@ -1,81 +1,70 @@
 import socket
-import os
 import threading
+from pathlib import Path
+
+BUFFER_SIZE = 8192
+
 
 class Server:
-    def __init__(self):
+    def __init__(self) -> None:
         self.host_port = 5000
         self.host_name = socket.gethostname()
-
         self.server_socket = socket.socket()
         self.server_socket.bind((self.host_name, self.host_port))
-
         self.server_socket.listen(5)
-    
-    def start(self):
-        print ("Server name : {}\nPORT : {}".format(self.host_name, self.host_port))
+
+    def start(self) -> None:
+        print(f"Server name : {self.host_name}\nPORT : {self.host_port}")
         print("Waiting for Connection ...")
 
         while True:
-            self.cnn, addr = self.server_socket.accept()
+            connection, _ = self.server_socket.accept()
             print('Client connect at IP => ' + '<' + str(socket.gethostbyname(self.host_name)) + '>')
-
             print("Waiting for another Connection ...")
+            threading.Thread(target=self.sendFile, args=(connection,), daemon=True).start()
 
-            t = threading.Thread(target=self.sendFile, args=('recvThread',self.cnn))
-            t.start()
-        self.server_socket.close()
-
-    def listFiles(self, connection):
-        client_response = connection.recv(1024)
-        client_response = client_response.decode()
+    def listFiles(self, connection: socket.socket) -> None:
+        client_response = connection.recv(1024).decode()
 
         if client_response[:3] == 'YES':
-            for file_name in os.listdir(os.getcwd()+"\\Files"):
-                connection.send(bytes(file_name+' ', 'utf-8'))
-            connection.send(bytes("Done", "utf-8"))
-        else:
-            return 0
+            files_dir = Path.cwd() / "Files"
+            for file_name in files_dir.iterdir():
+                if file_name.is_file():
+                    connection.sendall(f"{file_name.name} ".encode())
+            connection.sendall(b"Done")
 
-    def isFile(self, file_name):
-        path = os.getcwd()+"\\Files\\"
-        if os.path.isfile(path + file_name):
-            return 'EXIST' + str(os.path.getsize(path + file_name))
-        else:
-            return None
- 
-    def sendFile(self, name, connection):
+    def isFile(self, file_name: str):
+        path = Path.cwd() / "Files" / file_name
+        if path.is_file():
+            return 'EXIST' + str(path.stat().st_size)
+        return None
 
-        self.listFiles(connection)
-        
-        file_to_send = connection.recv(1024)
-        file_to_send = file_to_send.decode()
+    def sendFile(self, connection: socket.socket) -> None:
+        try:
+            self.listFiles(connection)
 
-        is_file = self.isFile(file_to_send)
+            file_to_send = connection.recv(1024).decode()
+            file_status = self.isFile(file_to_send)
 
-        if is_file != None:
-            connection.send(bytes(is_file, 'utf-8'))
+            if file_status is None:
+                connection.sendall(b"File does not exist!")
+                return
 
-            user_response = connection.recv(1024)
-            user_response = user_response.decode()
+            connection.sendall(file_status.encode())
+            user_response = connection.recv(1024).decode()
+            print('Client response : ', user_response[:2])
+            if user_response[:2] != 'OK':
+                connection.sendall(b'ERR')
+                return
 
-            print('Client response : ',user_response[:2])
-            if user_response[:2] == 'OK':
-                with open(os.getcwd() + "\\Files\\" + file_to_send, 'rb') as f:
-                    bytes_to_send = f.read(1024)
-                    connection.send(bytes_to_send)
+            file_path = Path.cwd() / "Files" / file_to_send
+            with file_path.open('rb') as f:
+                for chunk in iter(lambda: f.read(BUFFER_SIZE), b''):
+                    connection.sendall(chunk)
+        finally:
+            connection.close()
 
-                    while bytes_to_send != '':
-                        bytes_to_send = f.read(10**8)
-                        connection.send(bytes_to_send)
-            else:
-                connection.send(bytes('ERR', 'utf-8'))
-        
-        else :
-            connection.send(bytes("File does not exist!", 'utf-8'))
-        
-        connection.close()
 
-if __name__ == '__main__' :
+if __name__ == '__main__':
     my_server = Server()
     my_server.start()

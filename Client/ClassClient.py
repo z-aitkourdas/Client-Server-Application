@@ -1,76 +1,85 @@
 import socket
-import os
+from pathlib import Path
+
+BUFFER_SIZE = 8192
+
+
 class Client:
-    def __init__(self, server_host, server_port):
+    def __init__(self, server_host: str, server_port: int):
         self.server_host = server_host
         self.server_port = server_port
-
         self.client_socket = socket.socket()
+
         try:
             self.client_socket.connect((self.server_host, self.server_port))
-            print('Connected succefuly!')
-        except :
+            print('Connected successfully!')
+        except OSError:
             print("Couldn't connect to the server")
-    
-    def listFiles(self, cnx):
+            self.client_socket = None
+
+    def listFiles(self, cnx: socket.socket) -> None:
         list_files = input("Do you want to list all the files in the server? (Y/N) ")
         if list_files.lower() in ['y', 'yes']:
-            cnx.send(bytes('YES', 'utf-8'))
+            cnx.sendall(b'YES')
 
-            file_rcv = cnx.recv(1024).decode()
+            file_rcv = cnx.recv(BUFFER_SIZE).decode()
             while file_rcv.split()[-1] != 'Done':
-                file_rcv += cnx.recv(1024).decode()
+                file_rcv += cnx.recv(BUFFER_SIZE).decode()
             print(file_rcv[:-5])
         else:
-            cnx.send(bytes("NO", 'utf-8'))
-    
-    def recvFile(self, cnx):
-        file_name = input("Enter the file you want to download with the extention -> ")
+            cnx.sendall(b"NO")
 
-        if file_name != '':
-            cnx.send(bytes(file_name, 'utf-8'))
+    def _download(self, cnx: socket.socket, file_name: str, file_size: int) -> None:
+        destination = Path.cwd() / 'Downloads'
+        destination.mkdir(exist_ok=True)
+        full_path = destination / file_name
 
-            server_response = cnx.recv(1024)
-            server_response = server_response.decode()
+        if full_path.is_file() and full_path.stat().st_size == file_size:
+            print("The file already exists!")
+            return
+
+        with full_path.open('wb') as f:
+            data_recv = 0
+            while data_recv < file_size:
+                data = cnx.recv(BUFFER_SIZE)
+                if not data:
+                    break
+                data_recv += len(data)
+                f.write(data)
+        print("The file has been completely transferred!")
+
+    def recvFile(self, cnx: socket.socket) -> None:
+        file_name = input("Enter the file you want to download with the extension -> ")
+
+        if file_name:
+            cnx.sendall(file_name.encode())
+
+            server_response = cnx.recv(BUFFER_SIZE).decode()
 
             if server_response[:5] == 'EXIST':
                 file_size = float(server_response[5:])
                 if file_size // 10**3 == 0:
-                    msg = input("File Exists, "+str(file_size)+'Bytes, download? (Y/N) -> ')
+                    msg = input(f"File Exists, {file_size}Bytes, download? (Y/N) -> ")
                 elif file_size // 10**3 >= 1 and file_size // 10**3 < 10**3:
-                    msg = input("File Exists, "+str(file_size/10**3)+'KB, download? (Y/N) -> ')
-                elif file_size // 10**6 >= 1 :
-                    msg = input("File Exists, "+str(file_size//10**6)+'MB, download? (Y/N) -> ')
-                
-                if msg.lower() in ['y', 'yes'] :
-                    cnx.send(bytes('OK', 'utf-8'))
-                    
-                    try:
-                        full_path = os.getcwd()+"\\Downloads\\" + file_name
-                        os.makedirs('Downloads', exist_ok=True)
-                        if os.path.isfile(full_path) and os.path.getsize(full_path) == file_size:
-                            print("The file already exist!")
+                    msg = input(f"File Exists, {file_size/10**3}KB, download? (Y/N) -> ")
+                elif file_size // 10**6 >= 1:
+                    msg = input(f"File Exists, {file_size//10**6}MB, download? (Y/N) -> ")
+                else:
+                    msg = input(f"File Exists, {file_size}Bytes, download? (Y/N) -> ")
 
-                        else :
-                            f = open(full_path, 'wb')
-                            data_recv = 0
-
-                            while data_recv < file_size:
-                                data = cnx.recv(10**7)
-                                data_recv += len(data)
-                                f.write(data)
-                            print("The file has been comppletely transferd!")
-                    except :
-                        print("An exception occurred!")
-                    finally:
-                        f.close()
-            else :
+                if msg.lower() in ['y', 'yes']:
+                    cnx.sendall(b'OK')
+                    self._download(cnx, file_name, int(file_size))
+            else:
                 print(server_response)
 
-    def start(self):
+    def start(self) -> None:
+        if not self.client_socket:
+            return
         self.listFiles(self.client_socket)
         self.recvFile(self.client_socket)
         self.client_socket.close()
+
 
 if __name__ == '__main__':
     server_host = input("Enter the server host name : ")
